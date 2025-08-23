@@ -10,13 +10,13 @@ def main():
     if os.getenv('ENVIRONMENT') == 'production':
         os.environ.setdefault(
             'DJANGO_SETTINGS_MODULE',
-            'project_name.config.settings.production',
+            'Dfm.config.settings.production',
         )
         print(f'--> Running manage.py with production environment: {sys.argv}')
     else:
         os.environ.setdefault(
             'DJANGO_SETTINGS_MODULE',
-            'project_name.config.settings.development',
+            'Dfm.config.settings.development',
         )
         print(f'--> Running manage.py with \
             development environment: {sys.argv}')
