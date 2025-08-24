@@ -14,18 +14,22 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import (
-    path,
-    include,
-)
+
 import os
+
+from django.contrib import admin
+from django.urls import include, path
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     # Django Admin Panel
     path(os.environ.get("ADMIN_URL", "admin/"), admin.site.urls),
-
     # Apps urls
-    path('', include('Dfm.apps.core.urls'), name='apps_core_urls'),
-    path('', include('Dfm.apps.app1.urls'), name='apps_app1_urls'),
+    path("", include("Dfm.apps.core.urls"), name="apps_core_urls"),
+    path("", include("Dfm.apps.file.urls"), name="apps_app1_urls"),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
