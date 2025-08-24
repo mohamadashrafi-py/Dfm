@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Delete Tag - File Manager{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-danger">
+                        <i class="fas fa-exclamation-triangle"></i> Confirm Tag Deletion
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger" role="alert">
+                        <h4 class="alert-heading">Warning!</h4>
+                        <p>You are about to permanently delete the tag <strong>"{{ object.tag }}"</strong>. This action cannot be undone.</p>
+                        <hr>
+                        <p class="mb-0">
+                            {% if object.files.count > 0 %}
+                                This tag is used by {{ object.files.count }} file(s). 
+                                Deleting it will remove the tag association from these files.
+                            {% else %}
+                                This tag is not currently used by any files.
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div class="card mb-4 border-left-danger">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                        Tag to be deleted
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        <i class="fas fa-tag"></i> {{ object.tag }}
+                                    </div>
+                                    <div class="text-muted small mt-1">
+                                        <strong>Created:</strong> {{ object.created_at|date:"M d, Y" }}
+                                    </div>
+                                    <div class="text-muted small">
+                                        <strong>Files with this tag:</strong> {{ object.files.count }}
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-trash-alt fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <p>Are you sure you want to delete this tag?</p>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash-alt"></i> Yes, Delete Permanently
+                            </button>
+                            <a href="{% url 'file:tag_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<style>
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+    }
+    .alert {
+        border-left: 4px solid #e74a3b;
+    }
+</style>
+{% endblock %}
