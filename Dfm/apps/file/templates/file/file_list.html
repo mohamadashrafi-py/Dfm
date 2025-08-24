@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <!-- Filter and Search Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filter Files</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="form-inline">
+                <!-- Search Input -->
+                <div class="form-group mr-3 mb-2">
+                    <label for="q" class="sr-only">Search</label>
+                    <input type="text" class="form-control" id="q" name="q" 
+                           placeholder="Search files..." value="{{ request.GET.q }}">
+                </div>
+                
+                <!-- Category Filter -->
+                <div class="form-group mr-3 mb-2">
+                    <label for="category" class="sr-only">Category</label>
+                    <select class="form-control" id="category" name="category">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" 
+                                {% if request.GET.category == category.id|stringformat:"i" %}selected{% endif %}>
+                            {{ category.category }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Tag Filter -->
+                <div class="form-group mr-3 mb-2">
+                    <label for="tag" class="sr-only">Tag</label>
+                    <select class="form-control" id="tag" name="tag">
+                        <option value="">All Tags</option>
+                        {% for tag in tags %}
+                        <option value="{{ tag.id }}" 
+                                {% if request.GET.tag == tag.id|stringformat:"i" %}selected{% endif %}>
+                            {{ tag.tag }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Filter Buttons -->
+                <button type="submit" class="btn btn-primary mb-2 mr-2">
+                    <i class="fas fa-filter"></i> Apply Filters
+                </button>
+                <a href="{% url 'file:file_list' %}" class="btn btn-secondary mb-2">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Files Table Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">All Files</h6>
+            <span class="badge badge-primary">{{ files.paginator.count }} files</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Tag</th>
+                            <th>Uploaded</th>
+                            <th>Size</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for file in files %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-file {% if file.file.name|slice:'-4:' == '.pdf' %}text-danger{% elif file.file.name|slice:'-5:' == '.docx' %}text-primary{% elif file.file.name|slice:'-4:' == '.xls' or file.file.name|slice:'-5:' == '.xlsx' %}text-success{% elif file.file.name|slice:'-4:' == '.jpg' or file.file.name|slice:'-5:' == '.jpeg' or file.file.name|slice:'-4:' == '.png' %}text-info{% else %}text-secondary{% endif %} fa-lg mr-2"></i>
+                                    <a href="{{ file.file.url }}" target="_blank">{{ file.name|truncatechars:30 }}</a>
+                                </div>
+                            </td>
+                            <td>{{ file.category.category }}</td>
+                            <td><span class="badge badge-info">{{ file.tag.tag }}</span></td>
+                            <td>{{ file.created_at|date:"M d, Y" }}</td>
+                            <td>{{ file.file.size|filesizeformat }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ file.file.url }}" download class="btn btn-sm btn-success" title="Download">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <a href="{% url 'file:file_update' file.id %}" class="btn btn-sm btn-primary" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'file:file_delete' file.id %}" class="btn btn-sm btn-danger" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <i class="fas fa-folder-open fa-3x text-gray-300 mb-2"></i>
+                                <h5 class="text-gray-500">No files found</h5>
+                                <p class="mb-0">Upload your first file using the button above</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if files.has_other_pages %}
+            <nav aria-label="File pagination">
+                <ul class="pagination justify-content-center">
+                    {% if files.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ files.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for i in files.paginator.page_range %}
+                    {% if files.number == i %}
+                    <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+                    {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a></li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if files.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ files.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<style>
+    .table td, .table th {
+        vertical-align: middle;
+    }
+    .badge {
+        font-size: 0.85em;
+    }
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+    }
+    .btn-group-sm > .btn, .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize tooltips
+    $(document).ready(function() {
+        $('[title]').tooltip();
+    });
+</script>
+{% endblock %}
